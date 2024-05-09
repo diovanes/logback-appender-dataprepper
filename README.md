@@ -48,6 +48,29 @@ mvn clean install
 
 ```
 
+## Data Prepper - pipeline.yaml
+```
+log-pipeline-http:
+  workers: 8
+  delay: 5
+  source:
+    http:
+      health_check_service: true
+  buffer:
+    bounded_blocking:
+      buffer_size: 500
+      batch_size: 100
+  processor:
+    - parse_json:
+  sink:
+    - opensearch:
+        hosts: ["https://os01:9200", "https://os02:9200", "https://os03:9200"]
+        username: "admin"
+        password: "admin"
+        index: "application-logs"
+    - stdout:
+```
+
 ## References
 
 * [Chapter 4: Appenders](http://logback.qos.ch/manual/appenders.html)
