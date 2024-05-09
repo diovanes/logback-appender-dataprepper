@@ -1,0 +1,123 @@
+package com.github.diovanes.logback.appender;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.Charset;
+
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+
+public class HttpJsonAppender extends HttpAppenderAbstract {
+
+    /**
+     * Defines default method to send data.
+     */
+    protected final static String DEFAULT_METHOD = "POST";
+
+    protected String method = "POST";
+
+    @Override
+    public void start() {
+        normalizeMethodName();
+
+        super.start();
+    }
+
+    protected void checkProperties() {
+        if (isStringEmptyOrNull(url)) {
+            url = DEFAULT_URL;
+            addInfo(String.format(MSG_NOT_SET, "url", url));
+        } else {
+            addInfo(String.format(MSG_USING, "url", url));
+        }
+
+        if (isStringEmptyOrNull(method)) {
+            method = DEFAULT_METHOD;
+            addInfo(String.format(MSG_NOT_SET, "method", method));
+        } else {
+            addInfo(String.format(MSG_USING, "method", method));
+        }
+    }
+
+    @Override
+    public void append(ILoggingEvent event) {
+        createIssue(event);
+    }
+
+    public void createIssue(ILoggingEvent event) {
+        HttpURLConnection conn = null;
+
+        try {
+            URL urlObj = new URL(url);
+            addInfo("URL: " + url);
+            conn = (HttpURLConnection) urlObj.openConnection();
+            conn.setRequestMethod(method);
+            transformHeaders(conn);
+            boolean isOk = false;
+//            byte[] objEncoded = encoder.encode(event);
+            byte[] objEncoded = ("[" + new String(encoder.encode(event), StandardCharsets.UTF_8) + "]").getBytes(StandardCharsets.UTF_8);
+//            String log = "[" + s + "]";
+//            String log = "[{\"dataHora\":\"2024-05-02T17:30:09Z\",\"produto\":\"teste1\",\"ambiente\":\"DEV\",\"nivel\":\"INFO\",\"logger\":\"org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLogger\",\"mensagenErro\":\"\",\"classeErro\":\"ConditionEvaluationReportLogger\",\"stackTrace\":\"\",\"mensagem\":\"\\n\\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.\"}]";
+//            objEncoded = log.getBytes(StandardCharsets.UTF_8);
+
+            if (method.equals("GET") || method.equals("DELETE")) {
+                isOk = sendNoBodyRequest(conn);
+            } else if (method.equals("POST") || method.equals("PUT")) {
+                isOk = sendBodyRequest(objEncoded, conn);
+            }
+
+            if (!isOk) {
+                addError("Not OK");
+                return;
+            }
+        } catch (Exception e) {
+            addError("Exception", e);
+            return;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.disconnect();
+                }
+            } catch (Exception e) {
+                addError("Exception", e);
+            }
+        }
+    }
+
+    private void normalizeMethodName() {
+        method = method.toUpperCase();
+    }
+
+    protected void transformHeaders(HttpURLConnection conn) {
+        conn.setRequestProperty("Content-Type", contentType);
+        if (headers == null || headers.isEmpty()) {
+            return;
+        }
+
+        JSONObject jObj = new JSONObject(headers);
+        for (String key : jObj.keySet()) {
+            String value = (String) jObj.get(key);
+            conn.setRequestProperty(key, value);
+        }
+
+    }
+
+    protected boolean sendNoBodyRequest(HttpURLConnection conn) throws IOException {
+        return showResponse(conn);
+    }
+
+    protected boolean sendBodyRequest(byte[] objEncoded, HttpURLConnection conn) throws IOException {
+        conn.setDoOutput(true);
+        if (body != null) {
+            addInfo("Body: " + body);
+            IOUtils.write(body, conn.getOutputStream(), Charset.defaultCharset());
+        } else {
+            IOUtils.write(objEncoded, conn.getOutputStream());
+        }
+        return showResponse(conn);
+    }
+}
