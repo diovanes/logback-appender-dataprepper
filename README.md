@@ -56,19 +56,34 @@ log-pipeline-http:
   source:
     http:
       health_check_service: true
+      authentication:
+        http_basic:
+          username: "myuser"
+          password: "mys3cret"
   buffer:
     bounded_blocking:
       buffer_size: 500
       batch_size: 100
   processor:
     - parse_json:
+  route:
+    - dev: '/ambiente == "DEV"'
+    - hml: '/ambiente == "HML"'
   sink:
     - opensearch:
         hosts: ["https://os01:9200", "https://os02:9200", "https://os03:9200"]
         username: "admin"
         password: "admin"
-        index: "application-logs"
+        index: "logs_dev"
+        routes: [dev]
+    - opensearch:
+        hosts: ["https://os01:9200", "https://os02:9200", "https://os03:9200"]
+        username: "admin"
+        password: "admin"
+        index: "logs_hml"
+        routes: [hml]
     - stdout:
+
 ```
 
 ## References

@@ -58,12 +58,7 @@ public class HttpJsonAppender extends HttpAppenderAbstract {
             conn.setRequestMethod(method);
             transformHeaders(conn);
             boolean isOk = false;
-//            byte[] objEncoded = encoder.encode(event);
             byte[] objEncoded = ("[" + new String(encoder.encode(event), StandardCharsets.UTF_8) + "]").getBytes(StandardCharsets.UTF_8);
-//            String log = "[" + s + "]";
-//            String log = "[{\"dataHora\":\"2024-05-02T17:30:09Z\",\"produto\":\"teste1\",\"ambiente\":\"DEV\",\"nivel\":\"INFO\",\"logger\":\"org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLogger\",\"mensagenErro\":\"\",\"classeErro\":\"ConditionEvaluationReportLogger\",\"stackTrace\":\"\",\"mensagem\":\"\\n\\nError starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.\"}]";
-//            objEncoded = log.getBytes(StandardCharsets.UTF_8);
-
             if (method.equals("GET") || method.equals("DELETE")) {
                 isOk = sendNoBodyRequest(conn);
             } else if (method.equals("POST") || method.equals("PUT")) {
