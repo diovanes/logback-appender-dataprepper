@@ -48,7 +48,14 @@ mvn clean install
 
 ```
 
-## Data Prepper - pipeline.yaml
+## Data Prepper 
+
+### Docker
+```
+docker run --name data-prepper -p 2021:2021 -v pipelines.yaml:/usr/share/data-prepper/pipelines/pipelines.yaml opensearchproject/data-prepper:2.8.0
+```
+
+### pipeline.yaml
 ```
 log-pipeline-http:
   workers: 8
