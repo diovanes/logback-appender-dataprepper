@@ -5,7 +5,7 @@
 
 	<groupId>com.github.diovanes</groupId>
 	<artifactId>logback-appender-dataprepper</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<name>logback-appender-dataprepper</name>
 	<description>Appender for logback send logs to DataPrepper</description>
 
@@ -29,12 +29,22 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.4.14</version>
+			<version>1.5.6</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>1.4.14</version>
+			<version>1.5.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+			<version>3.1.12</version>
+		</dependency>
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>7.4</version>
 		</dependency>
 	</dependencies>
 
